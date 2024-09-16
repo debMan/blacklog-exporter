@@ -1,0 +1,22 @@
+logger:
+  level: "debug"
+
+kafka:
+  auto_commit: true
+  auto_offset_reset: earliest
+  bootstrap_servers: 
+    - "localhost:9092"
+  debug: false
+  group_id: blacklog-exporter
+  # healthcheck_timeout: 10
+  # sasl_mechanisms: {}
+  # sasl_password: {}
+  # sasl_username: {}
+  # security_protocol: {}
+  # timestamp_mode: {}
+  topic: blacklogs
+metric:
+  server:
+    address: ":8080"
+    path: /metrics
+  enabled: true
