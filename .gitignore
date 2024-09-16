@@ -5,6 +5,7 @@
 *.so
 *.dylib
 dist/
+blacklog-exporter
 
 # Test binary, built with `go test -c`
 *.test
