@@ -11,13 +11,8 @@ import (
 )
 
 func main(cfg config.Config, logger *zap.Logger) {
-	hostName, err := os.Hostname()
-	if err != nil {
-		logger.Panic("can't gte hostname", zap.Error(err))
-		os.Exit(1)
-	}
 	kc := kafkaclient.NewKafkaClient(cfg.Kafka, logger)
-	kc.StartBlackboxTest(hostName)
+	kc.StartBlackboxTest()
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)
 	<-sigchan

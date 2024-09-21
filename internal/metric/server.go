@@ -48,4 +48,5 @@ func (s ServerInfo) Start(logger *zap.Logger) {
 			logger.Error("metric server initiation failed", zap.Error(err))
 		}
 	}()
+	logger.Info("Started exporter")
 }

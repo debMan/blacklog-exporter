@@ -8,7 +8,6 @@ import (
 
 const (
 	Namespace = "blacklog_exporter"
-	Subsystem = "client"
 )
 
 type Metrics struct {
@@ -36,51 +35,28 @@ func newHistogramVec(histogramOpts prometheus.HistogramOpts, labelNames []string
 
 func NewMetrics() Metrics {
 	latencyBuckets := []float64{
-		0.001,
-		0.0015,
-		0.002,
-		0.0025,
-		0.003,
-		0.0035,
-		0.004,
-		0.0045,
-		0.005,
-		0.0055,
-		0.006,
-		0.0065,
-		0.007,
-		0.0075,
-		0.008,
-		0.0085,
-		0.009,
-		0.0095,
-		0.01,
-		0.015,
-		0.02,
-		0.025,
-		0.03,
-		0.045,
-		0.05,
-		0.065,
-		0.07,
-		0.08,
-		0.09,
-		0.1,
-		0.2,
-		0.3,
-		0.5,
-		1,
+		5,
+		15,
+		30,
+		60,
+		120,  // 2 minutes
+		300,  // 5 minutes
+		600,  // 10 minutes
+		900,  // 15 minutes
+		1800, // 30 minutes
+		2700, // 45 minutes
+		3600, // 1 hour
+		7200, // 2 hours
 	}
 
 	return Metrics{
 		// nolint: exhaustruct
 		Latency: newHistogramVec(prometheus.HistogramOpts{
 			Namespace:   Namespace,
-			Subsystem:   Subsystem,
 			Name:        "latency",
-			Help:        "from publish to consume duration in seconds",
+			Help:        "Latency from publish to consume duration in seconds",
 			ConstLabels: nil,
 			Buckets:     latencyBuckets,
-		}, []string{"host", "output"}),
+		}, []string{"hostname", "output_type"}),
 	}
 }

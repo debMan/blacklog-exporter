@@ -1,6 +1,7 @@
 package kafkaclient
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -18,10 +19,10 @@ type KafkaClient struct {
 	metrics  Metrics
 }
 
-type KafkaMessage struct {
-	Value     map[string]float64
-	Timestamp time.Time
-	Offset    kafka.Offset
+type LogEntry struct {
+	Timestamp string `json:"timestamp"`
+	Hostname  string `json:"hostname"`
+	// OtherLabel string `json:"OTHER_LABEL"` // You can extend this struct as needed
 }
 
 func NewKafkaClient(config Config, logger *zap.Logger) *KafkaClient {
@@ -68,7 +69,6 @@ func (kc *KafkaClient) ConsumerInitialize() (*KafkaClient, error) {
 		kc.logger.Panic("could not connect to kafka", zap.Error(err))
 	}
 
-	defer kc.consumer.Close()
 	return kc, err
 }
 
@@ -76,37 +76,54 @@ func (kc *KafkaClient) Dispose() {
 	kc.consumer.Close()
 }
 
-func (kc *KafkaClient) StartBlackboxTest(hostName string) {
-	outputName := "dummy"
+func (kc *KafkaClient) StartBlackboxTest() {
+	output_type := "kafka"
 	re := regexp.MustCompile(`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}`)
 
 	if kc.config.Topics == nil {
 		kc.logger.Panic("at least one topic is required.")
 	}
+
 	kc.ConsumerInitialize()
+	defer kc.consumer.Close()
+
 	err := kc.consumer.SubscribeTopics(kc.config.Topics, nil)
 	if err != nil {
 		kc.logger.Panic("Failed to subscribe to topics", zap.Error(err))
 	}
+	for {
+		msg, err := kc.consumer.ReadMessage(-1)
+		if err == nil {
+			kc.logger.Debug(fmt.Sprintf("Consumed message: %s", string(msg.Value)))
 
-	msg, err := kc.consumer.ReadMessage(-1)
-	if err == nil {
-		kc.logger.Info(fmt.Sprintf("Consumed message: %s", string(msg.Value)))
-
-		// Extract timestamp from message and calculate latency
-		timestampStr := re.FindString(string(msg.Value))
-		if timestampStr != "" {
-			timestamp, err := time.Parse(time.RFC3339, timestampStr)
-			if err == nil {
-				latency := time.Since(timestamp).Seconds()
-				kc.metrics.Latency.With(prometheus.Labels{
-					"host":   hostName,
-					"output": outputName,
-				}).Observe(latency)
-				kc.logger.Info(fmt.Sprintf("Message latency: %.4f seconds", latency))
+			var logEntry LogEntry
+			// Unmarshal the Kafka message into the log entry struct
+			err = json.Unmarshal(msg.Value, &logEntry)
+			if err != nil {
+				kc.logger.Error(fmt.Sprintf("Error unmarshalling message: %v", err), zap.Error(err))
+				continue
 			}
+
+			// Extract timestamp from message and calculate latency
+			timestampStr := re.FindString(logEntry.Timestamp)
+			if timestampStr != "" {
+				kc.logger.Debug(fmt.Sprintf("timestampStr: %s", string(timestampStr)))
+				timestampStr += "Z"
+				timestamp, err := time.Parse(time.RFC3339Nano, timestampStr)
+				if err == nil {
+					kc.logger.Debug(fmt.Sprintf("timestamp: %s", (timestamp)))
+					latency := time.Since(timestamp).Seconds()
+					kc.metrics.Latency.With(prometheus.Labels{
+						"hostname":    logEntry.Hostname,
+						"output_type": output_type,
+					}).Observe(latency)
+					kc.logger.Debug(fmt.Sprintf("Message latency: %.4f seconds", latency))
+				} else {
+					kc.logger.Debug(fmt.Sprintf("cant get timestamp for: %s", (err)))
+				}
+			}
+		} else {
+			kc.logger.Panic(fmt.Sprintf("Consumer error: %v (%v)", err, msg), zap.Error(err))
 		}
-	} else {
-		kc.logger.Panic(fmt.Sprintf("Consumer error: %v (%v)", err, msg), zap.Error(err))
 	}
 }

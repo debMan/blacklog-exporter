@@ -11,7 +11,7 @@ import (
 func Default() Config {
 	return Config{
 		Logger: logger.Config{
-			Level: "debug",
+			Level: "info",
 		},
 		Kafka: kafkaclient.Config{
 			BootstrapServers: []string{"localhost:9092"},
