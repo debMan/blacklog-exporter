@@ -19,7 +19,7 @@ import (
 
 const (
 	// Prefix indicates environment variables prefix.
-	Prefix = "ble_"
+	Prefix = "BLE_"
 )
 
 type (
@@ -49,8 +49,11 @@ func New(configPath string) Config {
 
 	// load environment variables
 	if err := k.Load(env.Provider(Prefix, ".", func(s string) string {
-		return strings.ReplaceAll(strings.ToLower(
-			strings.TrimPrefix(s, Prefix)), "__", ".")
+		placeholder := "\x01"
+		tmpStr := strings.ReplaceAll(s, "__", placeholder)
+		dottedStr := strings.ReplaceAll(tmpStr, "_", ".")
+		result := strings.ReplaceAll(dottedStr, placeholder, "_")
+		return strings.ToLower(result)
 	}), nil); err != nil {
 		log.Printf("error loading environment variables: %s", err)
 	}
