@@ -7,19 +7,17 @@ WORKDIR /go/src/app
 
 COPY go.sum go.mod config.example.yaml /go/src/app/
 RUN go mod download && \
-    go mod tidy && \
-    go vet -v
+    go mod tidy
 COPY . .
 
-WORKDIR /go/src/app/cmd/blacklog-exporter
-RUN go build -o /blacklog-exporter
+RUN go build ./cmd/blacklog-exporter
 
 # Final stage
-LABEL maintainer github.com/debman
 FROM gcr.io/distroless/static
+LABEL maintainer github.com/debman
 WORKDIR /app
 
-COPY --from=builder /go/src/app/cmd/blacklog-exporter /app/
+COPY --from=builder /go/src/app/blacklog-exporter /app/
 COPY --from=builder /go/src/app/config.example.yaml /config.yml
 
 ENTRYPOINT ["/app/blacklog-exporter"]
