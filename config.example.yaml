@@ -12,7 +12,8 @@ kafka:
   # sasl_password: {}
   # sasl_username: {}
   # security_protocol: {}
-  topic: blacklogs
+  topics: 
+    - blacklogs
 metric:
   server:
     address: ":8080"
