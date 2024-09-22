@@ -8,12 +8,10 @@ kafka:
     - "localhost:9092"
   debug: false
   group_id: blacklog-exporter
-  # healthcheck_timeout: 10
   # sasl_mechanisms: {}
   # sasl_password: {}
   # sasl_username: {}
   # security_protocol: {}
-  # timestamp_mode: {}
   topic: blacklogs
 metric:
   server:

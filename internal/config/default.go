@@ -17,12 +17,12 @@ func Default() Config {
 			BootstrapServers: []string{"localhost:9092"},
 			AutoOffsetReset:  "earliest",
 			Topics:           []string{"blacklogs"},
-			GroupId:          "localblacklog-exporterhost",
+			GroupId:          "blacklog-exporter",
 			AutoCommit:       true,
 		},
 		Metric: metric.Config{
 			Server: metric.Server{
-				Address: ":4444",
+				Address: ":8080",
 				Path:    "/metrics",
 			},
 			Enabled: true,
