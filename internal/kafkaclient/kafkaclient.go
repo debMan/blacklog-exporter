@@ -109,7 +109,7 @@ func (kc *KafkaClient) StartBlackboxTest() {
 			if timestampStr != "" {
 				kc.logger.Debug(fmt.Sprintf("timestampStr: %s", string(timestampStr)))
 				timestampStr += "Z"
-				timestamp, err := time.Parse(time.RFC3339Nano, timestampStr)
+				timestamp, err := time.Parse(time.RFC3339, timestampStr)
 				if err == nil {
 					kc.logger.Debug(fmt.Sprintf("timestamp: %s", (timestamp)))
 					latency := time.Since(timestamp).Seconds()
