@@ -72,8 +72,8 @@ The path to the config file can be set by `-c` or `--config` command line argume
 | kafka.auto_commit       | bool     | `-` | `true`               | Kafka auto commit                  |
 | kafka.auto_offset_reset | string   | `-` | `earliest`           | Auto offset reset policy for kafka |
 | kafka.bootstrap_servers | []string | `-` | `["localhost:9092"]` | TODO                               |
-| kafka.debug             | bool     | `-` | `false               | TODO                               |
-| kafka.group_id          | string   | `-` | `blacklog-exporter   | TODO                               |
+| kafka.debug             | bool     | `-` | `false`              | TODO                               |
+| kafka.group_id          | string   | `-` | `blacklog-exporter`  | TODO                               |
 | kafka.sasl_mechanisms   | string   | `-` | `""`                 | TODO                               |
 | kafka.sasl_password     | string   | `-` | `""`                 | TODO                               |
 | kafka.sasl_username     | string   | `-` | `""`                 | TODO                               |
