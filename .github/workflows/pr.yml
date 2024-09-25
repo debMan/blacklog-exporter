@@ -25,11 +25,18 @@ jobs:
           images: |
             ${{ github.repository }}
           tags: |
-            type=sha
+            ${{ github.sha }}
+      - name: Build
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          outputs: type=docker,dest=target-image.tar
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ github.repository }}:${{ github.sha }}'
+          input: /github/workspace/target-image.tar
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
