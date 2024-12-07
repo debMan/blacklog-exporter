@@ -19,10 +19,10 @@ type KafkaClient struct {
 	config        *Config
 	logger        *zap.Logger
 	metrics       Metrics
-	messageConfig *MessageConfig // TODO
+	messageConfig *message.Config // TODO
 }
 
-type MessageData struct {
+type LogEntry struct {
 	Timestamp string `json:"timestamp"`
 	Hostname  string `json:"hostname"`
 	// OtherLabel string `json:"OTHER_LABEL"` // You can extend this struct as needed
@@ -80,7 +80,7 @@ func (kc *KafkaClient) Dispose() {
 	kc.consumer.Close()
 }
 
-func (kc *KafkaClient) extractMessageData(msg *message.Message) (MessageData, error) {
+func (kc *KafkaClient) extractLogEntry(msg *message.Message) (LogEntry, error) {
 	// var data interface{}
 	var fullMessage message.Message
 
@@ -91,12 +91,12 @@ func (kc *KafkaClient) extractMessageData(msg *message.Message) (MessageData, er
 	}
 
 	// Use the configured JSON path to extract the message data substructure
-	messageData, err := jsonpath.Get(kc.messageConfig.DataJSONPath, fullMessage) // TODO
+	logEntry, err := jsonpath.Get(kc.messageConfig.DataJSONPath, fullMessage) // TODO
 	if err != nil {
 		kc.logger.Error(fmt.Sprintf("failed to extract message data: %v", err), zap.Error(err))
 	}
 
-	return messageData, nil
+	return logEntry, nil
 }
 func (kc *KafkaClient) StartBlackboxTest() {
 	output_type := "kafka"
@@ -121,15 +121,15 @@ func (kc *KafkaClient) StartBlackboxTest() {
 			var message message.Message
 			message = msg.Value
 
-			var messageData MessageData
-			messageData, err := kc.extractMessageData(&message)
+			var logEntry LogEntry
+			logEntry, err := kc.extractLogEntry(&message)
 			if err != nil {
 				kc.logger.Error(fmt.Sprintf("Error extracting message data: %v", err), zap.Error(err))
 				continue
 			}
 
 			// Extract timestamp from message and calculate latency
-			timestampStr := re.FindString(messageData.Timestamp)
+			timestampStr := re.FindString(logEntry.Timestamp)
 			if timestampStr != "" {
 				kc.logger.Debug(fmt.Sprintf("timestampStr: %s", string(timestampStr)))
 				timestampStr += "Z"
@@ -138,7 +138,7 @@ func (kc *KafkaClient) StartBlackboxTest() {
 					kc.logger.Debug(fmt.Sprintf("timestamp: %s", (timestamp)))
 					latency := time.Since(timestamp).Seconds()
 					kc.metrics.Latency.With(prometheus.Labels{
-						"hostname":    messageData.Hostname,
+						"hostname":    logEntry.Hostname,
 						"output_type": output_type,
 					}).Observe(latency)
 					kc.logger.Debug(fmt.Sprintf("Message latency: %.4f seconds", latency))
