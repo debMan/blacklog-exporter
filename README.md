@@ -66,22 +66,23 @@ Use the `config.yaml` file or environment variables to configure *blacklog-expor
 
 The path to the config file can be set by `-c` or `--config` command line argument. The default path to the config file is `./config.yaml`.
 
-| `yaml` key              | type     | env | default              | description                        |
-| ----------------------- | -------- | --- | -------------------- | ---------------------------------- |
-| logger.level            | string   | `-` | `info`               | Log level                          |
-| kafka.auto_commit       | bool     | `-` | `true`               | Kafka auto commit                  |
-| kafka.auto_offset_reset | string   | `-` | `earliest`           | Auto offset reset policy for kafka |
-| kafka.bootstrap_servers | []string | `-` | `["localhost:9092"]` | TODO                               |
-| kafka.debug             | bool     | `-` | `false`              | TODO                               |
-| kafka.group_id          | string   | `-` | `blacklog-exporter`  | TODO                               |
-| kafka.sasl_mechanisms   | string   | `-` | `""`                 | TODO                               |
-| kafka.sasl_password     | string   | `-` | `""`                 | TODO                               |
-| kafka.sasl_username     | string   | `-` | `""`                 | TODO                               |
-| kafka.security_protocol | string   | `-` | `""`                 | TODO                               |
-| kafka.topics            | []string | `-` | `["blacklogs"]`      | TODO                               |
-| metric.enabled          | bool     | `-` | `true`               | TODO                               |
-| metric.server.address   | string   | `-` | `":8080"`            | TODO                               |
-| metric.server.path      | string   | `-` | `"metrics"`          | TODO                               |
+| `yaml` key              | type     | env | default              | description                                          |
+| ----------------------- | -------- | --- | -------------------- | ---------------------------------------------------- |
+| logger.level            | string   | `-` | `info`               | Log level                                            |
+| kafka.auto_commit       | bool     | `-` | `true`               | Kafka auto commit                                    |
+| kafka.auto_offset_reset | string   | `-` | `earliest`           | Auto offset reset policy for kafka                   |
+| kafka.bootstrap_servers | []string | `-` | `["localhost:9092"]` | TODO                                                 |
+| kafka.debug             | bool     | `-` | `false`              | TODO                                                 |
+| kafka.group_id          | string   | `-` | `blacklog-exporter`  | TODO                                                 |
+| kafka.sasl_mechanisms   | string   | `-` | `""`                 | TODO                                                 |
+| kafka.sasl_password     | string   | `-` | `""`                 | TODO                                                 |
+| kafka.sasl_username     | string   | `-` | `""`                 | TODO                                                 |
+| kafka.security_protocol | string   | `-` | `""`                 | TODO                                                 |
+| kafka.topics            | []string | `-` | `["blacklogs"]`      | TODO                                                 |
+| message.data_json_path  | string   | `-` | `$`                  | JSON Path to log data inside incoming kafka messages |
+| metric.enabled          | bool     | `-` | `true`               | TODO                                                 |
+| metric.server.address   | string   | `-` | `":8080"`            | TODO                                                 |
+| metric.server.path      | string   | `-` | `"metrics"`          | TODO                                                 |
 
 ## Missing improvements / TODO
 
