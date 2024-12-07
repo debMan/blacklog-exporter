@@ -16,7 +16,7 @@ kafka:
     - blacklogs
 
 message:
-  data_json_path: "."
+  data_json_path: "$"
 
 metric:
   server:

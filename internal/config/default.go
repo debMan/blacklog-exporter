@@ -29,7 +29,7 @@ func Default() Config {
 			Enabled: true,
 		},
 		Message: message.Config{
-			DataJSONPath: ".",
+			DataJSONPath: "$",
 		},
 	}
 }

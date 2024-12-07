@@ -82,7 +82,7 @@ func (kc *KafkaClient) Dispose() {
 
 func (kc *KafkaClient) extractLogEntry(msg *message.Message) (LogEntry, error) {
 	// var data interface{}
-	var fullMessage message.Message
+	var fullMessage interface{}
 
 	// Unmarshal JSON
 	err := json.Unmarshal(*msg, &fullMessage)
@@ -91,9 +91,19 @@ func (kc *KafkaClient) extractLogEntry(msg *message.Message) (LogEntry, error) {
 	}
 
 	// Use the configured JSON path to extract the message data substructure
-	logEntry, err := jsonpath.Get(kc.messageConfig.DataJSONPath, fullMessage) // TODO
+	extractedData, err := jsonpath.Get(kc.messageConfig.DataJSONPath, fullMessage) // TODO
 	if err != nil {
-		kc.logger.Error(fmt.Sprintf("failed to extract message data: %v", err), zap.Error(err))
+		kc.logger.Error(fmt.Sprintf("failed to extract message data using JSON path %s: %v", kc.messageConfig.DataJSONPath, err), zap.Error(err))
+	}
+	extractedJSON, err := json.Marshal(extractedData)
+	if err != nil {
+		kc.logger.Error(fmt.Sprintf("failed to marshal extracted data: %v", err), zap.Error(err))
+	}
+
+	var logEntry LogEntry
+	err = json.Unmarshal(extractedJSON, &logEntry)
+	if err != nil {
+		kc.logger.Error(fmt.Sprintf("failed to unmarshal extracted data into LogEntry: %v", err), zap.Error(err))
 	}
 
 	return logEntry, nil
@@ -119,9 +129,9 @@ func (kc *KafkaClient) StartBlackboxTest() {
 			kc.logger.Debug(fmt.Sprintf("Consumed message: %s", string(msg.Value)))
 
 			var message message.Message
-			message = msg.Value
-
 			var logEntry LogEntry
+
+			message = msg.Value
 			logEntry, err := kc.extractLogEntry(&message)
 			if err != nil {
 				kc.logger.Error(fmt.Sprintf("Error extracting message data: %v", err), zap.Error(err))
