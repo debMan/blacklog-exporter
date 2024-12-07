@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-image:
-    name: Build and check for vulnerabilities
+    name: Build for vulnerabilities check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -39,6 +39,7 @@ jobs:
           name: target-image
           path: /tmp/target-image.tar
   scan-image:
+    name: Check for vulnerabilities
     runs-on: ubuntu-latest
     needs: build-image
     steps:
