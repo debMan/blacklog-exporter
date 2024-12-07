@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/debman/blacklog-exporter/internal/kafkaclient"
 	"github.com/debman/blacklog-exporter/internal/logger"
+	"github.com/debman/blacklog-exporter/internal/message"
 	"github.com/debman/blacklog-exporter/internal/metric"
 )
 
@@ -26,6 +27,9 @@ func Default() Config {
 				Path:    "/metrics",
 			},
 			Enabled: true,
+		},
+		Message: message.Config{
+			DataJSONPath: ".",
 		},
 	}
 }

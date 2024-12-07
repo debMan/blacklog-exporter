@@ -14,6 +14,10 @@ kafka:
   security_protocol: ""
   topics: 
     - blacklogs
+
+message:
+  data_json_path: "."
+
 metric:
   server:
     address: ":8080"
