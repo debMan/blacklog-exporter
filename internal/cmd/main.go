@@ -11,7 +11,7 @@ import (
 )
 
 func main(cfg config.Config, logger *zap.Logger) {
-	kc := kafkaclient.NewKafkaClient(cfg.Kafka, logger)
+	kc := kafkaclient.NewKafkaClient(cfg.Kafka, cfg.Message, logger)
 	kc.StartBlackboxTest()
 	sigchan := make(chan os.Signal, 1)
 	signal.Notify(sigchan, syscall.SIGINT, syscall.SIGTERM)

@@ -7,16 +7,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PaesslerAG/jsonpath"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+	"github.com/debman/blacklog-exporter/internal/message"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
 )
 
 type KafkaClient struct {
-	consumer *kafka.Consumer
-	config   *Config
-	logger   *zap.Logger
-	metrics  Metrics
+	consumer      *kafka.Consumer
+	config        *Config
+	logger        *zap.Logger
+	metrics       Metrics
+	messageConfig *message.Config // TODO
 }
 
 type LogEntry struct {
@@ -25,13 +28,14 @@ type LogEntry struct {
 	// OtherLabel string `json:"OTHER_LABEL"` // You can extend this struct as needed
 }
 
-func NewKafkaClient(config Config, logger *zap.Logger) *KafkaClient {
+func NewKafkaClient(config Config, messageConfig message.Config, logger *zap.Logger) *KafkaClient { // TODO
 
 	kc := &KafkaClient{
-		config:   &config,
-		logger:   logger,
-		consumer: nil,
-		metrics:  NewMetrics(),
+		config:        &config,
+		logger:        logger,
+		consumer:      nil,
+		metrics:       NewMetrics(),
+		messageConfig: &messageConfig, // TODO
 	}
 	return kc
 }
@@ -76,6 +80,34 @@ func (kc *KafkaClient) Dispose() {
 	kc.consumer.Close()
 }
 
+func (kc *KafkaClient) extractLogEntry(msg *message.Message) (LogEntry, error) {
+	// var data interface{}
+	var fullMessage interface{}
+
+	// Unmarshal JSON
+	err := json.Unmarshal(*msg, &fullMessage)
+	if err != nil {
+		kc.logger.Error(fmt.Sprintf("Error unmarshalling message: %v", err), zap.Error(err))
+	}
+
+	// Use the configured JSON path to extract the message data substructure
+	extractedData, err := jsonpath.Get(kc.messageConfig.DataJSONPath, fullMessage) // TODO
+	if err != nil {
+		kc.logger.Error(fmt.Sprintf("failed to extract message data using JSON path %s: %v", kc.messageConfig.DataJSONPath, err), zap.Error(err))
+	}
+	extractedJSON, err := json.Marshal(extractedData)
+	if err != nil {
+		kc.logger.Error(fmt.Sprintf("failed to marshal extracted data: %v", err), zap.Error(err))
+	}
+
+	var logEntry LogEntry
+	err = json.Unmarshal(extractedJSON, &logEntry)
+	if err != nil {
+		kc.logger.Error(fmt.Sprintf("failed to unmarshal extracted data into LogEntry: %v", err), zap.Error(err))
+	}
+
+	return logEntry, nil
+}
 func (kc *KafkaClient) StartBlackboxTest() {
 	output_type := "kafka"
 	re := regexp.MustCompile(`\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}`)
@@ -96,11 +128,13 @@ func (kc *KafkaClient) StartBlackboxTest() {
 		if err == nil {
 			kc.logger.Debug(fmt.Sprintf("Consumed message: %s", string(msg.Value)))
 
+			var message message.Message
 			var logEntry LogEntry
-			// Unmarshal the Kafka message into the log entry struct
-			err = json.Unmarshal(msg.Value, &logEntry)
+
+			message = msg.Value
+			logEntry, err := kc.extractLogEntry(&message)
 			if err != nil {
-				kc.logger.Error(fmt.Sprintf("Error unmarshalling message: %v", err), zap.Error(err))
+				kc.logger.Error(fmt.Sprintf("Error extracting message data: %v", err), zap.Error(err))
 				continue
 			}
 

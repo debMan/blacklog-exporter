@@ -8,6 +8,7 @@ import (
 
 	"github.com/debman/blacklog-exporter/internal/kafkaclient"
 	"github.com/debman/blacklog-exporter/internal/logger"
+	"github.com/debman/blacklog-exporter/internal/message"
 	"github.com/debman/blacklog-exporter/internal/metric"
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/env"
@@ -25,9 +26,10 @@ const (
 type (
 	// Config holds all configurations.
 	Config struct {
-		Logger logger.Config      `json:"logger,omitempty" koanf:"logger"`
-		Kafka  kafkaclient.Config `json:"kafka,omitempty"   koanf:"kafka"`
-		Metric metric.Config      `json:"metric,omitempty" koanf:"metric"`
+		Logger  logger.Config      `json:"logger,omitempty" koanf:"logger"`
+		Kafka   kafkaclient.Config `json:"kafka,omitempty"   koanf:"kafka"`
+		Metric  metric.Config      `json:"metric,omitempty" koanf:"metric"`
+		Message message.Config     `json:"message,omitempty" koanf:"message"`
 	}
 )
 
